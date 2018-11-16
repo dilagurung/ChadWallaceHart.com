@@ -3,6 +3,14 @@ var express = require('express');
 var app = express();
 var io      = require("socket.io");         // web socket external module
 var easyrtc = require("easyrtc");           // EasyRTC external module
+var fs = require("fs");
+var https = require("https");
+
+var options = {
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+};
+
 
 //Statically serve files in these directories  -easyRTC
 app.use("/js", express.static(__dirname + '/easyrtc/js'));
@@ -62,7 +70,7 @@ app.post('/login', function (req, res) {
     }
     else {
         console.log("Posted data:" + JSON.stringify(req.body));
-        if (req.body.pw == password) {
+        if (req.body.pw == "password") {
             loggedIn = true;
             res.send("logged in");
             console.log("Logged in");
@@ -121,8 +129,19 @@ app.get('/video', function(req, res){
 });
 
 //var webServer = app.listen(process.env.port || 8080); //original WebMatrix port
-var webServer = app.listen(8080);
-console.log('Listening on port ' + 80);
+//var webServer = app.listen(8080);
+//console.log('Listening on port ' + 80);
+
+var webServer=https.createServer({
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+}, app)
+    .listen(8080, function () {
+        console.log('Example app listening on port 3000! Go to https://localhost:3000/')
+    })
+
+
+
 
 // Start Socket.io so it attaches itself to Express server
 var socketServer = io.listen(webServer);
